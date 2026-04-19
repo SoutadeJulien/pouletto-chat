@@ -1,5 +1,9 @@
 # 🐔 Pouletto Chat
 
+<p align="center">
+  <img src="frontend/assets/images/icon.png" width="120" alt="Pouletto Chat icon" />
+</p>
+
 > Self-hosted Android messaging app with a Docker backend.
 
 > 🇫🇷 [Lire en français](#-pouletto-chat--guide-en-français)
@@ -316,6 +320,10 @@ The API key will be embedded in the compiled APK (this is intentional with the `
 ---
 
 # 🐔 Pouletto Chat — Guide en français
+
+<p align="center">
+  <img src="frontend/assets/images/icon.png" width="120" alt="Icône Pouletto Chat" />
+</p>
 
 > Application de messagerie Android auto-hébergée avec un serveur Docker.
 
