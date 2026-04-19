@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pouletto Chat — Admin</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #333; }
+    .container { max-width: 480px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.1); overflow: hidden; }
+    h1 { background: #1a1a2e; color: #fff; padding: 20px 24px; font-size: 18px; }
+    .add-form { display: flex; gap: 8px; padding: 20px 24px; border-bottom: 1px solid #eee; }
+    .add-form input { flex: 1; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+    .add-form input:focus { outline: none; border-color: #1a1a2e; }
+    .btn { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; }
+    .btn-add { background: #1a1a2e; color: #fff; }
+    .btn-add:hover { background: #2d2d5e; }
+    .btn-del { background: #fee2e2; color: #dc2626; font-size: 13px; padding: 6px 12px; }
+    .btn-del:hover { background: #fecaca; }
+    #user-list { padding: 8px 0; min-height: 60px; }
+    .user-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 24px; }
+    .user-row:hover { background: #f9f9f9; }
+    .username { font-size: 15px; }
+    .empty { padding: 24px; text-align: center; color: #999; font-size: 14px; }
+    .error-msg { color: #dc2626; font-size: 13px; padding: 0 24px 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Pouletto Chat — Utilisateurs</h1>
+    <div class="add-form">
+      <input type="text" id="new-username" placeholder="Nom d'utilisateur" />
+      <button class="btn btn-add" onclick="addUser()">Ajouter</button>
+    </div>
+    <p id="error-msg" class="error-msg" style="display:none"></p>
+    <div id="user-list"></div>
+  </div>
+
+  <script>
+    async function loadUsers() {
+      const res = await fetch('/admin/users');
+      const users = await res.json();
+      const list = document.getElementById('user-list');
+      if (!users.length) {
+        list.innerHTML = '<p class="empty">Aucun utilisateur</p>';
+        return;
+      }
+      list.innerHTML = users.map(u =>
+        `<div class="user-row">
+          <span class="username">${escHtml(u.username)}</span>
+          <button class="btn btn-del" onclick="deleteUser(${u.id})">Supprimer</button>
+        </div>`
+      ).join('');
+    }
+
+    async function addUser() {
+      const input = document.getElementById('new-username');
+      const username = input.value.trim();
+      if (!username) return;
+      showError('');
+      const res = await fetch('/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username }),
+      });
+      if (res.ok) {
+        input.value = '';
+        loadUsers();
+      } else {
+        const data = await res.json();
+        showError(data.error || 'Erreur lors de la creation');
+      }
+    }
+
+    async function deleteUser(id) {
+      if (!confirm('Supprimer cet utilisateur et tous ses messages ?')) return;
+      await fetch(`/admin/users/${id}`, { method: 'DELETE' });
+      loadUsers();
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('error-msg');
+      el.textContent = msg;
+      el.style.display = msg ? 'block' : 'none';
+    }
+
+    function escHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    document.getElementById('new-username').addEventListener('keydown', e => {
+      if (e.key === 'Enter') addUser();
+    });
+
+    loadUsers();
+  </script>
+</body>
+</html>
